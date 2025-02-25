@@ -4,50 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSLUSD TradingView Chart</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-</head>
-<body>
-    <div id="bslusd_chart" style="width: 100%; height: 500px;"></div>
-    <script>
-        // Load TradingView Lightweight Charts
-        const { createChart } = LightweightCharts;
+   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-        // Initialize Chart
-        const chart = createChart(document.getElementById("bslusd_chart"), {
-            width: 800,
-            height: 500,
-            layout: { backgroundColor: "#ffffff", textColor: "#000000" },
-            grid: { vertLines: { color: "#e1e1e1" }, horzLines: { color: "#e1e1e1" } },
-            timeScale: { timeVisible: true, secondsVisible: false }
-        });
+// Load TradingView Lightweight Charts
+const { createChart } = LightweightCharts;
 
-        // Create a CandleStick Series
-        const candleSeries = chart.addCandlestickSeries();
+// Create Chart Container
+const chartContainer = document.createElement("div");
+chartContainer.id = "bslusd_chart";
+chartContainer.style.width = "100%";
+chartContainer.style.height = "500px";
+document.body.appendChild(chartContainer);
 
-        // Fetch BSLUSD Data from GeckoTerminal API
-        async function fetchBSLUSDData() {
-            try {
-                const response = await fetch("https://api.geckoterminal.com/api/v2/simple/price?ids=bslusd&vs_currencies=usd");
-                const data = await response.json();
+// Initialize Chart
+const chart = createChart(chartContainer, {
+    width: chartContainer.clientWidth,
+    height: 500,
+    layout: { backgroundColor: "#ffffff", textColor: "#000000" },
+    grid: { vertLines: { color: "#e1e1e1" }, horzLines: { color: "#e1e1e1" } },
+    timeScale: { timeVisible: true, secondsVisible: false }
+});
 
-                // Convert Data to TradingView Format
-                const chartData = [{
-                    time: Math.floor(new Date().getTime() / 1000),
-                    open: data.bslusd.usd * 0.98,  // Simulating OHLC data
-                    high: data.bslusd.usd * 1.02,
-                    low: data.bslusd.usd * 0.97,
-                    close: data.bslusd.usd
-                }];
+// Create a CandleStick Series
+const candleSeries = chart.addCandlestickSeries();
 
-                candleSeries.setData(chartData);
-            } catch (error) {
-                console.error("Error fetching BSLUSD data:", error);
-            }
-        }
+// Fetch Historical BSLUSD Data from GeckoTerminal API
+async function fetchHistoricalData() {
+    try {
+        const response = await fetch("https://api.geckoterminal.com/api/v2/pairs/YOUR_PAIR_ID_HERE/ohlcv/?interval=1h");
+        const data = await response.json();
 
-        // Fetch Data and Update Chart Every 30 Seconds
-        fetchBSLUSDData();
-        setInterval(fetchBSLUSDData, 30000);
+        // Convert Data to TradingView Format
+        const chartData = data.data.map(entry => ({
+            time: Math.floor(new Date(entry.timestamp).getTime() / 1000), // Convert to UNIX timestamp
+            open: parseFloat(entry.open),
+            high: parseFloat(entry.high),
+            low: parseFloat(entry.low),
+            close: parseFloat(entry.close)
+        }));
+
+        candleSeries.setData(chartData);
+    } catch (error) {
+        console.error("Error fetching historical BSLUSD data:", error);
+    }
+}
+
+// Fetch and Update Data Every 30 Minutes
+fetchHistoricalData();
+setInterval(fetchHistoricalData, 1800000);
+
     </script>
 </body>
 </html>
