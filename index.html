@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSLUSD TradingView Chart</title>
-   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 <script>
-// Ensure DOM is ready
 document.addEventListener("DOMContentLoaded", function() {
-
     console.log("Initializing Chart...");
 
     // Create Chart Container
@@ -17,11 +15,9 @@ document.addEventListener("DOMContentLoaded", function() {
     chartContainer.id = "bslusd_chart";
     chartContainer.style.width = "100%";
     chartContainer.style.height = "500px";
-
-    // Append to body
     document.body.appendChild(chartContainer);
 
-    console.log("Chart container created and appended to DOM.");
+    console.log("Chart container created and added to DOM.");
 
     // Initialize Chart
     const chart = LightweightCharts.createChart(chartContainer, {
@@ -32,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
         timeScale: { timeVisible: true, secondsVisible: false }
     });
 
-    console.log("Chart initialized.");
+    console.log("Chart initialized successfully.");
 
     // Create a CandleStick Series
     const candleSeries = chart.addCandlestickSeries();
@@ -77,6 +73,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // Fetch Data and Update Chart Every Hour
     fetchHistoricalData();
     setInterval(fetchHistoricalData, 3600000);
+});
+</script>
+
 
 });
 </script>
