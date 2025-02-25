@@ -4,52 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSLUSD TradingView Chart</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-</head>
-<body>
-    <div id="bslusd_chart" style="width: 100%; height: 500px;"></div>
+   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-    <script>
-        const { createChart } = LightweightCharts;
+// Load TradingView Lightweight Charts
+const { createChart } = LightweightCharts;
 
-        // Initialize Chart
-        const chart = createChart(document.getElementById("bslusd_chart"), {
-            width: window.innerWidth * 0.9,
-            height: 500,
-            layout: { backgroundColor: "#ffffff", textColor: "#000000" },
-            grid: { vertLines: { color: "#e1e1e1" }, horzLines: { color: "#e1e1e1" } },
-            timeScale: { timeVisible: true, secondsVisible: false }
-        });
+// Create Chart Container
+const chartContainer = document.createElement("div");
+chartContainer.id = "bslusd_chart";
+chartContainer.style.width = "100%";
+chartContainer.style.height = "500px";
+document.body.appendChild(chartContainer);
 
-        // Create a CandleStick Series
-        const candleSeries = chart.addCandlestickSeries();
+// Initialize Chart
+const chart = createChart(chartContainer, {
+    width: chartContainer.clientWidth,
+    height: 500,
+    layout: { backgroundColor: "#ffffff", textColor: "#000000" },
+    grid: { vertLines: { color: "#e1e1e1" }, horzLines: { color: "#e1e1e1" } },
+    timeScale: { timeVisible: true, secondsVisible: false }
+});
 
-        // Fetch Historical Data from CoinGecko API
-        async function fetchHistoricalData() {
-            try {
-                const response = await fetch("https://api.coingecko.com/api/v3/coins/banksocial/ohlc?vs_currency=usd&days=7");
-                const data = await response.json();
+// Create a CandleStick Series
+const candleSeries = chart.addCandlestickSeries();
 
-                console.log("Fetched Data:", data); // Debugging
+// Fetch Historical Data from CoinGecko API
+async function fetchHistoricalData() {
+    try {
+        const response = await fetch("https://api.coingecko.com/api/v3/coins/banksocial/ohlc?vs_currency=usd&days=7");
+        const data = await response.json();
 
-                // Convert Data to TradingView Format
-                const chartData = data.map(entry => ({
-                    time: entry[0] / 1000, // Convert to UNIX timestamp
-                    open: entry[1],
-                    high: entry[2],
-                    low: entry[3],
-                    close: entry[4]
-                }));
+        console.log("API Response:", data); // Debugging: Log the API response
 
-                candleSeries.setData(chartData);
-            } catch (error) {
-                console.error("Error fetching historical data from CoinGecko:", error);
-            }
+        if (!Array.isArray(data) || data.length === 0) {
+            console.error("No valid OHLC data received.");
+            return;
         }
 
-        // Fetch Data and Update Chart Every Hour
-        fetchHistoricalData();
-        setInterval(fetchHistoricalData, 3600000);
+        // Convert Data to TradingView Format
+        const chartData = data.map(entry => ({
+            time: entry[0] / 1000, // Convert to UNIX timestamp (seconds)
+            open: entry[1],
+            high: entry[2],
+            low: entry[3],
+            close: entry[4]
+        }));
+
+        console.log("Processed Chart Data:", chartData); // Debugging
+
+        candleSeries.setData(chartData); // Update chart
+        chart.timeScale().fitContent(); // Ensure the chart scales correctly
+    } catch (error) {
+        console.error("Error fetching historical data from CoinGecko:", error);
+    }
+}
+
+// Fetch Data and Update Chart Every Hour
+fetchHistoricalData();
+setInterval(fetchHistoricalData, 3600000);
+
     </script>
 </body>
 </html>
