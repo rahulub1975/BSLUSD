@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSLUSD TradingView Chart</title>
-   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 // Load TradingView Lightweight Charts
 const { createChart } = LightweightCharts;
@@ -28,30 +28,30 @@ const chart = createChart(chartContainer, {
 // Create a CandleStick Series
 const candleSeries = chart.addCandlestickSeries();
 
-// Fetch Historical BSLUSD Data from GeckoTerminal API
+// Fetch Historical Data from CoinGecko API
 async function fetchHistoricalData() {
     try {
-        const response = await fetch("https://api.geckoterminal.com/api/v2/pairs/YOUR_PAIR_ID_HERE/ohlcv/?interval=1h");
+        const response = await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=7");
         const data = await response.json();
 
         // Convert Data to TradingView Format
-        const chartData = data.data.map(entry => ({
-            time: Math.floor(new Date(entry.timestamp).getTime() / 1000), // Convert to UNIX timestamp
-            open: parseFloat(entry.open),
-            high: parseFloat(entry.high),
-            low: parseFloat(entry.low),
-            close: parseFloat(entry.close)
+        const chartData = data.map(entry => ({
+            time: entry[0] / 1000, // Convert to UNIX timestamp
+            open: entry[1],
+            high: entry[2],
+            low: entry[3],
+            close: entry[4]
         }));
 
         candleSeries.setData(chartData);
     } catch (error) {
-        console.error("Error fetching historical BSLUSD data:", error);
+        console.error("Error fetching historical data from CoinGecko:", error);
     }
 }
 
-// Fetch and Update Data Every 30 Minutes
+// Fetch Data and Update Chart Every Hour
 fetchHistoricalData();
-setInterval(fetchHistoricalData, 1800000);
+setInterval(fetchHistoricalData, 3600000);
 
     </script>
 </body>
